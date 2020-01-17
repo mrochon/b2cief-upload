@@ -14,13 +14,13 @@ Add-Type -AssemblyName System.Web
 # 
 # https://login.microsoftonline.com/<yourtenant>.onmicrosoft.com/oauth2/authorize?client_id=<appId>&response_mode=form_post&response_type=code&state=abc&nonce=xyz
 # 
-$clientId = '<application Id>'
-$clientSecret = '<application secret>'
+$clientId = '<app Id>'
+$clientSecret = '<app secret>'
 
 # Configuration file
-$confFile = 'c:\temp\test\appSettings.json'
+$confFile = 'C:\Users\mrochon\source\repos\b2cief-upload\sampleData\LocalAccounts\appSettings.json'
 # Source IEF policies 
-$source = 'C:\temp\test\*'
+$source = 'C:\Users\mrochon\source\repos\b2cief-upload\sampleData\LocalAccounts\*'
 
 $clientSecret = [System.Web.HttpUtility]::UrlEncode($clientSecret)
 # $s = ConvertTo-SecureString $clientSecret -AsPlainText -force
@@ -30,21 +30,26 @@ function Upload-Children($baseId) {
     foreach($p in $policyList) {
         if ($p.BaseId -eq $baseId) {
             "Uploading: {0}" -f $p.Id
-            $policy = $p.Body -replace "{Settings:Tenant}", $env.Tenant
-            $policy = $policy -replace "{Settings:ProxyIdentityExperienceFrameworkAppId}", $env.PolicySettings.ProxyIdentityExperienceFrameworkAppId
-            $policy = $policy -replace "{Settings:IdentityExperienceFrameworkAppId}", $env.PolicySettings.IdentityExperienceFrameworkAppId
-            $policyId = $p.Id
+            $policy = $p.Body -replace "yourtenant", $env.TenantName
+            $policy = $policy -replace "ProxyIdentityExperienceFrameworkAppId", $env.ProxyIdentityExperienceFrameworkAppId
+            $policy = $policy -replace "IdentityExperienceFrameworkAppId", $env.IdentityExperienceFrameworkAppId
+            $policy = $policy.Replace('PolicyId="B2C_1A_', 'PolicyId="B2C_1A_{0}' -f $env.PolicyPrefix)
+            $policy = $policy.Replace('/B2C_1A_', '/B2C_1A_{0}' -f $env.PolicyPrefix)
+            $policy = $policy.Replace('<PolicyId>B2C_1A_', '<PolicyId>B2C_1A_{0}' -f $env.PolicyPrefix)
+            # replace other placeholders
+
+            $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $env.PolicyPrefix)
             $url = 'https://graph.microsoft.com/beta/trustFramework/policies/{0}/$value' -f $policyId
             $uploadResponse = Invoke-WebRequest $url -Body $policy -Method 'PUT' -ContentType 'application/xml' -Headers $headers
             $result = '      Result: {0} - {1}' -f $uploadResponse.StatusCode, $uploadResponse.StatusDescription
             $result
-            Upload-Children $policyId
+            Upload-Children $p.Id
         }
     }
 }
 
 # load originals
-$files = Get-Childitem $source -Include *.xml
+$files = Get-Childitem -Path $source -Include *.xml
 $policyList = @()
 foreach($policyFile in $files) {
     $policy = Get-Content $policyFile
@@ -58,9 +63,9 @@ foreach($p in $policyList) {
 
 $conf = Get-Content -Path $confFile | Out-String | ConvertFrom-Json
 foreach($env in $conf.Environments) {
-    $tenant = $env.Tenant
+    $tenant = $env.TenantName
     $body = "grant_type=client_credentials&scope=https://graph.microsoft.com/.default&client_id=$clientId&client_secret=$clientSecret"
-    $LoginResponse = Invoke-WebRequest "https://login.microsoftonline.com/$tenant/oauth2/v2.0/token" -Body $Body -Method 'POST' -ContentType 'application/x-www-form-urlencoded'
+    $LoginResponse = Invoke-WebRequest "https://login.microsoftonline.com/$tenant.onmicrosoft.com/oauth2/v2.0/token" -Body $Body -Method 'POST' -ContentType 'application/x-www-form-urlencoded'
     $tokens = $loginResponse.Content | ConvertFrom-Json
     $access_token = $tokens.access_token
     $headers = @{Authorization = "Bearer $access_token"}  
