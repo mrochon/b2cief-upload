@@ -40,8 +40,7 @@ The script will use the following string replacement rules to apply your *appSet
 `$clientId = 'e.g. 3d22610c-9e4d-48ca-9c85-f4daf3564dc1'
 $clientSecret = 'e.g. JvrblahblahD6pQ='
 $confFile = 'C:\Users\me\source\repos\b2cief-upload\sampleData\LocalAccounts\appSettings.json'
-$source = 'C:\Users\me\source\repos\b2cief-upload\sampleData\LocalAccounts'
-
+$source = 'C:\Users\me\source\repos\b2cief-upload\sampleData\LocalAccounts
 Upload-IEFPolicies -clientId $clientId -clientSecret $clientSecret -configurationFilePath $confFile -sourceDirectory $source`
 
 Where:
