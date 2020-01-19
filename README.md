@@ -33,7 +33,7 @@ The script will use the following string replacement rules to apply your *appSet
 | PolicyPrefix | Inserted into the name of policies, e.g. *B2C_1A_MyTrustBase* where *My* is the value of the PolicyPrefix |
 | ProxyIdentityExperienceFrameworkAppId | See [IEF applications setup](https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-get-started-custom?tabs=applications#register-identity-experience-framework-applications) |
 | IdentityExperienceFrameworkAppId | See [IEF applications setup](https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-get-started-custom?tabs=applications#register-identity-experience-framework-applications) |
-| *other* | You can define your own symbolic properties, e.g. *"AADId": "0000". If you do, modify the PowerShell script to use the value of the property as replacement in policies |
+| *other* | You can define your own symbolic properties, e.g. *"AADId": "0000"*. If you do, modify the PowerShell script to use the value of the property as replacement in policies with an appropriate rule to select which text should be replaced |
 
 ## Execution
 
