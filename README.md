@@ -31,3 +31,23 @@ The script will use the following string replacement rules to apply your *appSet
 | -------- | ------ |
 | TenantName | *yourtenant*. Also used to determine which B2C tenant to upload the policies to |
 | PolicyPrefix | Inserted into the name of policies, e.g. *B2C_1A_MyTrustBase* where *My* is the value of the PolicyPrefix |
+| ProxyIdentityExperienceFrameworkAppId | See [IEF applications setup](https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-get-started-custom?tabs=applications#register-identity-experience-framework-applications) |
+| IdentityExperienceFrameworkAppId | See [IEF applications setup](https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-get-started-custom?tabs=applications#register-identity-experience-framework-applications) |
+| *other* | You can define your own symbolic properties, e.g. *"AADId": "0000". If you do, modify the PowerShell script to use the value of the property as replacement in policies |
+
+## Execution
+
+`$clientId = 'e.g. 3d22610c-9e4d-48ca-9c85-f4daf3564dc1'
+$clientSecret = 'e.g. JvrblahblahD6pQ='
+$confFile = 'C:\Users\me\source\repos\b2cief-upload\sampleData\LocalAccounts\appSettings.json'
+$source = 'C:\Users\me\source\repos\b2cief-upload\sampleData\LocalAccounts'
+
+Upload-IEFPolicies -clientId $clientId -clientSecret $clientSecret -configurationFilePath $confFile -sourceDirectory $source`
+
+Where:
+- clientId is the Application Id from application registration step
+- clientSecret is the Application Key from application registration step
+- confFile is the location of your appSettings.json file
+- source is the directory containing your IEF policies
+
+
