@@ -55,7 +55,8 @@
                 $policy = $policy.Replace('PolicyId="B2C_1A_', 'PolicyId="B2C_1A_{0}' -f $env.PolicyPrefix)
                 $policy = $policy.Replace('/B2C_1A_', '/B2C_1A_{0}' -f $env.PolicyPrefix)
                 $policy = $policy.Replace('<PolicyId>B2C_1A_', '<PolicyId>B2C_1A_{0}' -f $env.PolicyPrefix)
-                # replace other placeholders
+                # replace other placeholders, e.g.
+                $policy = $policy -replace "{CheckPlayerAPIUrl}", $env.CheckPlayerAPIUrl
 
                 $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $env.PolicyPrefix)
                 $url = 'https://graph.microsoft.com/beta/trustFramework/policies/{0}/$value' -f $policyId

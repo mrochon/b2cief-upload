@@ -35,6 +35,33 @@
       </TechnicalProfiles>
     </ClaimsProvider>
 
+    <ClaimsProvider>
+        <DisplayName>REST APIs</DisplayName>
+        <TechnicalProfiles>
+            <TechnicalProfile Id="AzureFunctions-CheckPlayerTagWebHook">
+                <DisplayName>Check Player Tag Web Hook Azure Function</DisplayName>
+                <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                <Metadata>
+                    <Item Key="ServiceUrl">{CheckPlayerAPIUrl}</Item>
+                    <Item Key="SendClaimsIn">Body</Item>
+                    <!-- Set AuthenticationType to Basic or ClientCertificate in production environments -->
+                    <Item Key="AuthenticationType">None</Item>
+                    <!-- REMOVE the following line in production environments -->
+                    <Item Key="AllowInsecureAuthInProduction">true</Item>
+                </Metadata>
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="playerTag" />
+                </InputClaims>
+                <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+            </TechnicalProfile>
+            <TechnicalProfile Id="SelfAsserted-ProfileUpdate">
+                <ValidationTechnicalProfiles>
+                    <ValidationTechnicalProfile ReferenceId="AzureFunctions-CheckPlayerTagWebHook" />
+                </ValidationTechnicalProfiles>
+            </TechnicalProfile>
+        </TechnicalProfiles>
+    </ClaimsProvider>    
+
   </ClaimsProviders>
 
     <!--UserJourneys>
