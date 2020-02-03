@@ -37,13 +37,15 @@ The script will use the following string replacement rules to apply your *appSet
 
 ## Execution
 
-`$clientId = 'e.g. 3d22610c-9e4d-48ca-9c85-f4daf3564dc1'`
-`$clientSecret = 'e.g. JvrblahblahD6pQ='`
-`$confFile = 'C:\LocalAccounts\appSettings.json'`
-`$source = 'C:\LocalAccounts`
-`$dest = 'C:\LocalAccounts\updated`
+`$clientId = 'e.g. 3d22610c-9e4d-48ca-9c85-f4daf3564dc1'
+$clientSecret = 'e.g. JvrblahblahD6pQ=
+$confFile = 'C:\LocalAccounts\appSettings.json'
+$source = 'C:\LocalAccounts
+$dest = 'C:\LocalAccounts\updated`
 
 `Upload-IEFPolicies -clientId $clientId -clientSecret $clientSecret -configurationFilePath $confFile -sourceDirectory $source -updatedSourceDirectory $dest`
+
+(For better security, particularly if using the script for updating multiple B2C tenants, use X509 as credential. You will need to modify the script of course)
 
 Where:
 - clientId is the Application Id from application registration step

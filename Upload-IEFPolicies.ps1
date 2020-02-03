@@ -51,7 +51,31 @@
     function Upload-Children($baseId) {
         foreach($p in $policyList) {
             if ($p.BaseId -eq $baseId) {
-                "Uploading: {0}" -f $p.Id
+                # Skip unchanged files
+                #outFile = ""
+                if (-not ([string]::IsNullOrEmpty($updatedSourceDirectory))) {
+                    if(!(Test-Path -Path $updatedSourceDirectory )){
+                        New-Item -ItemType directory -Path $updatedSourceDirectory
+                        Write-Host "Updated source folder created"
+                    }
+                    if (-not $updatedSourceDirectory.EndsWith("\")) {
+                        $updatedSourceDirectory = $updatedSourceDirectory + "\"
+                    }
+                    $envUpdatedDir = '{0}{1}' -f $updatedSourceDirectory, $env.TenantName
+                    if(!(Test-Path -Path $envUpdatedDir)){
+                        New-Item -ItemType directory -Path $envUpdatedDir
+                        Write-Host "  Updated source folder created for " + $env.TenantName
+                    }
+                    $outFile = '{0}\{1}' -f $envUpdatedDir, $p.Source
+                    if (Test-Path $outFile) {
+                        if ($p.LastWrite -le (Get-Item $outFile).LastWriteTime) {
+                            "{0}: is up to date" -f $p.Id
+                            Upload-Children $p.Id
+                            continue;
+                        }
+                    }
+                }
+                "{0}: uploading" -f $p.Id
                 $policy = $p.Body -replace "yourtenant", $env.TenantName
                 $policy = $policy -replace "ProxyIdentityExperienceFrameworkAppId", $env.ProxyIdentityExperienceFrameworkAppId
                 $policy = $policy -replace "IdentityExperienceFrameworkAppId", $env.IdentityExperienceFrameworkAppId
@@ -67,15 +91,7 @@
                 $result = '      Result: {0} - {1}' -f $uploadResponse.StatusCode, $uploadResponse.StatusDescription
                 $result
 
-                if (-not ([string]::IsNullOrEmpty($updatedSourceDirectory))) {
-                    if(!(Test-Path -Path $updatedSourceDirectory )){
-                        New-Item -ItemType directory -Path $updatedSourceDirectory
-                        Write-Host "Updated source folder created"
-                    }
-                    if (-not $updatedSourceDirectory.EndsWith("\")) {
-                        $updatedSourceDirectory = $updatedSourceDirectory + "\"
-                    }
-                    $outFile = $updatedSourceDirectory + $p.Source
+                if (-not ([string]::IsNullOrEmpty($outFile))) {
                     out-file -FilePath $outFile -inputobject $policy
                 }
                 Upload-Children $p.Id
@@ -89,7 +105,7 @@
     foreach($policyFile in $files) {
         $policy = Get-Content $policyFile
         $xml = [xml] $policy
-        $policyList= $policyList + @(@{ Id = $xml.TrustFrameworkPolicy.PolicyId; BaseId = $xml.TrustFrameworkPolicy.BasePolicy.PolicyId; Body = $policy; Source= $policyFile.Name })
+        $policyList= $policyList + @(@{ Id = $xml.TrustFrameworkPolicy.PolicyId; BaseId = $xml.TrustFrameworkPolicy.BasePolicy.PolicyId; Body = $policy; Source= $policyFile.Name; LastWrite = $policyFile.LastWriteTime })
     }
     "Source policies:"
     foreach($p in $policyList) {
