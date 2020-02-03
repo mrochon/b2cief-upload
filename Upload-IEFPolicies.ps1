@@ -15,7 +15,10 @@
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]$sourceDirectory
+        [string]$sourceDirectory,
+
+        [ValidateNotNullOrEmpty()]
+        [string]$updatedSourceDirectory
     )
 
     Add-Type -AssemblyName System.Web
@@ -63,6 +66,18 @@
                 $uploadResponse = Invoke-WebRequest $url -Body $policy -Method 'PUT' -ContentType 'application/xml' -Headers $headers
                 $result = '      Result: {0} - {1}' -f $uploadResponse.StatusCode, $uploadResponse.StatusDescription
                 $result
+
+                if (-not ([string]::IsNullOrEmpty($updatedSourceDirectory))) {
+                    if(!(Test-Path -Path $updatedSourceDirectory )){
+                        New-Item -ItemType directory -Path $updatedSourceDirectory
+                        Write-Host "Updated source folder created"
+                    }
+                    if (-not $updatedSourceDirectory.EndsWith("\")) {
+                        $updatedSourceDirectory = $updatedSourceDirectory + "\"
+                    }
+                    $outFile = $updatedSourceDirectory + $p.Source
+                    out-file -FilePath $outFile -inputobject $policy
+                }
                 Upload-Children $p.Id
             }
         }
@@ -74,7 +89,7 @@
     foreach($policyFile in $files) {
         $policy = Get-Content $policyFile
         $xml = [xml] $policy
-        $policyList= $policyList + @(@{ Id = $xml.TrustFrameworkPolicy.PolicyId; BaseId = $xml.TrustFrameworkPolicy.BasePolicy.PolicyId; Body = $policy})
+        $policyList= $policyList + @(@{ Id = $xml.TrustFrameworkPolicy.PolicyId; BaseId = $xml.TrustFrameworkPolicy.BasePolicy.PolicyId; Body = $policy; Source= $policyFile.Name })
     }
     "Source policies:"
     foreach($p in $policyList) {
