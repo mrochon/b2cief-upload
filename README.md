@@ -39,15 +39,17 @@ The script will use the following string replacement rules to apply your *appSet
 
 `$clientId = 'e.g. 3d22610c-9e4d-48ca-9c85-f4daf3564dc1'`
 `$clientSecret = 'e.g. JvrblahblahD6pQ='`
-`$confFile = 'C:\Users\me\source\repos\b2cief-upload\sampleData\LocalAccounts\appSettings.json'`
-`$source = 'C:\Users\me\source\repos\b2cief-upload\sampleData\LocalAccounts`
+`$confFile = 'C:\LocalAccounts\appSettings.json'`
+`$source = 'C:\LocalAccounts`
+`$dest = 'C:\LocalAccounts\updated`
 
-`Upload-IEFPolicies -clientId $clientId -clientSecret $clientSecret -configurationFilePath $confFile -sourceDirectory $source`
+`Upload-IEFPolicies -clientId $clientId -clientSecret $clientSecret -configurationFilePath $confFile -sourceDirectory $source -updatedSourceDirectory $dest`
 
 Where:
 - clientId is the Application Id from application registration step
 - clientSecret is the Application Key from application registration step
 - confFile is the location of your appSettings.json file
 - source is the directory containing your IEF policies
+- dest (optional) is the directory where the script should save copies of modified and uploaded policies
 
 
