@@ -43,7 +43,7 @@ You can use the Get-IEFSettings function included in the script to create the in
 
 `Get-IEFSettings > appSettings.json`
 
-Log in using a local B2C account (e.g. me@mytenant.onmicrosoft.com) with application enumeration privileges. The script will discover check your B2C tenant for the required IEF applications and save their application ids in the settings file.
+Log in using a local B2C account (e.g. me@mytenant.onmicrosoft.com) with application enumeration privileges. The script will check your B2C tenant for the required IEF applications and save their application ids in the settings file.
 
 ### Upload-IEFPolicies
 
