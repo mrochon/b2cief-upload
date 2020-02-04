@@ -126,6 +126,8 @@
     }
 }
 
+# Creates a json object with typical settings needed by
+# the Upload-IEFPolicies function.
 function Get-IEFSettings {
     [CmdletBinding()]
     param(
