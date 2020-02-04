@@ -23,7 +23,7 @@ Replace *yourtenant* with the name of a B2C tenant and *clientId* with the Appli
 ## Policy setup
 1. Store your policies in a single folder. (The SampleData folder on this github project was downloaded from the [starter pack](https://github.com/Azure-Samples/active-directory-b2c-custom-policy-starterpack) for local acounts).
 2. Modify the sampleData/appSettings.json file to include the values you need to replace in the policies. Use multiple Environment objects
-to update multiple B2C directories.
+to update multiple B2C directories. (see Get-IEFSettings command below).
 
 The script will use the following string replacement rules to apply your *appSettings.json* values.
 
@@ -36,6 +36,20 @@ The script will use the following string replacement rules to apply your *appSet
 | *other* | You can define your own symbolic properties, e.g. *"CheckPlayerAPIUrl": "https://myapi.com"*. If you do, modify the PowerShell script to use the value of the property as replacement in policies with an appropriate rule to select which text should be replacedg. Look for *{CheckPlayerAPIUrl}* string in both the *TrustFrameworkExtensions.xml* and the *Upload-IEFPolicies.ps1* script to see an example |
 
 ## Execution
+
+### Get-IEFSettings
+
+You can use the Get-IEFSettings function included in the script to create the initial contents of the settings.json file. To use it run:
+
+`Get-IEFSettings > appSettings.json`
+
+Log in using a local B2C account (e.g. me@mytenant.onmicrosoft.com) with application enumeration privileges. The script will discover check your B2C tenant for the required IEF applications and save their application ids in the settings file.
+
+### Upload-IEFPolicies
+
+Use this function to upload your IEF policies to one or more B2C tenants. The settings json file needs to have an environemnt definition for each B2C tenant you wish to upload the policies to.
+
+E.g.
 
 ```PowerShell
 $clientId = 'e.g. 3d22610c-9e4d-48ca-9c85-f4daf3564dc1'
@@ -55,5 +69,6 @@ Where:
 - confFile is the location of your appSettings.json file
 - source is the directory containing your IEF policies
 - dest (optional) is the directory where the script should save copies of modified and uploaded policies
+
 
 

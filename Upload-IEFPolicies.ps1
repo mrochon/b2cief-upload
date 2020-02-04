@@ -125,3 +125,67 @@
         Upload-Children($null)
     }
 }
+
+function Get-IEFSettings {
+    [CmdletBinding()]
+    param(
+        [ValidateNotNullOrEmpty()]
+        [string]$policyPrefix
+    )
+    Write-Host "Please login using your local B2C admin account"
+    $creds = Get-Credential
+    $conn = Connect-AzureAD -Credential $creds
+
+    $iefAppName = "IdentityExperienceFramework"
+    if(!($iefApp = Get-AzureADApplication -Filter "DisplayName eq '$($iefAppName)'"  -ErrorAction SilentlyContinue))
+    {
+        throw "Not found " + $iefAppName
+    } else {
+        if ($iefApp.PublicClient) {
+            Write-Error "IdentityExperienceFramework must be defined as a confidential client (web app)"
+        }
+    }
+
+    $iefProxyAppName = "ProxyIdentityExperienceFramework"
+    if(!($iefProxyApp = Get-AzureADApplication -Filter "DisplayName eq '$($iefProxyAppName)'"  -ErrorAction SilentlyContinue))
+    {
+        throw "Not found " + $iefProxyAppName
+    } else {
+        if (-not $iefProxyApp.PublicClient) {
+            Write-Error "ProxyIdentityExperienceFramework must be defined as a public client"
+        }
+        $iefOK = $signInOk = $False
+        foreach($r in $iefProxyApp.RequiredResourceAccess) {
+            if ($r.ResourceAppId -eq $iefApp.AppId) { $iefOk = $true }
+            if ($r.ResourceAppId -eq '00000002-0000-0000-c000-000000000000') { $signInOk = $true }
+        }
+        if ((-not $iefOK) -or (-not $signInOk)) {
+            Write-Error 'ProxyIdentityExperienceFramework is not permissioned to use the IdentityExperienceFramework app (it must be consented as well)'
+        } 
+    }
+
+    $envs = @()
+    $envs += @{ 
+        TenantName = $conn.TenantDomain.Split('.')[0]; 
+        IdentityExperienceFrameworkAppId = $iefApp.AppId;
+        ProxyIdentityExperienceFrameworkAppId = $iefProxyApp.AppId;
+        PolicyPrefix = $policyPrefix  }
+    $conf = @{ Environments = $envs }
+    $conf | ConvertTo-Json
+
+    <#
+     # 
+    $iefAppName = "IdentityExperienceFramework"
+    if(!($iefApp = Get-AzureADApplication -Filter "DisplayName eq '$($iefAppName)'"  -ErrorAction SilentlyContinue))
+    {
+        Write-Host "Creating " $iefAppName
+        $myApp = New-AzureADApplication -DisplayName $iefAppName   
+    }
+    $iefProxyAppName = "ProxyIdentityExperienceFramework"
+    if(!($iefProxyApp = Get-AzureADApplication -Filter "DisplayName eq '$($iefProxyAppName)'"  -ErrorAction SilentlyContinue))
+    {
+        Write-Host "Creating " $iefAppName
+        $myApp = New-AzureADApplication -DisplayName $iefAppName   
+    }
+    #>
+}
