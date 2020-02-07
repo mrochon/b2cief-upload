@@ -1,4 +1,5 @@
 ﻿function Upload-IEFPolicies {
+
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -134,10 +135,6 @@ function Get-IEFSettings {
         [ValidateNotNullOrEmpty()]
         [string]$policyPrefix
     )
-    Write-Host "Please login using your local B2C admin account"
-    $creds = Get-Credential
-    $conn = Connect-AzureAD -Credential $creds
-
     $iefAppName = "IdentityExperienceFramework"
     if(!($iefApp = Get-AzureADApplication -Filter "DisplayName eq '$($iefAppName)'"  -ErrorAction SilentlyContinue))
     {
@@ -166,6 +163,7 @@ function Get-IEFSettings {
         } 
     }
 
+    $conn = Get-AzureADCurrentSessionInfo
     $envs = @()
     $envs += @{ 
         TenantName = $conn.TenantDomain.Split('.')[0]; 

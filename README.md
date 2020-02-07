@@ -9,7 +9,7 @@ PowerShell script which:
 Register the script as an application using the **Azure AD blade** (not B2C) blade of your B2C tenant:
 1. Application type: web application (OAuth2 confidential client)
 2. Create a secret for the application and note it down
-2. Required Permissions: Microsoft Graph: Application permission: Read and write organization's trust framework policies
+2. Required Permissions: Microsoft Graph: Application permission: Policy -> Read and write trust framework policies
 3. Mark the application as multi-tenant if you want to use the script with multiple B2C tenants
 
 To complete the registration have a user with admin rights grant consent to the requested permission. If you are planning
@@ -41,9 +41,12 @@ The script will use the following string replacement rules to apply your *appSet
 
 You can use the Get-IEFSettings function included in the script to create the initial contents of the settings.json file. To use it run:
 
-`Get-IEFSettings > appSettings.json`
+```PowerShell
+Connect-AzureAD -TenantId yourtenant.onmicrosoft.com
+Get-IEFSettings > appSettings.json
+```
 
-Log in using a local B2C account (e.g. me@mytenant.onmicrosoft.com) with application enumeration privileges. The script will check your B2C tenant for the required IEF applications and save their application ids in the settings file.
+The script will check your B2C tenant for the required IEF applications and save their application ids in the settings file.
 
 ### Upload-IEFPolicies
 
