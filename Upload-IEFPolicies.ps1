@@ -1,15 +1,6 @@
 ﻿function Upload-IEFPolicies {
-
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]$clientId,
-        
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]$clientsecret,
-
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]$configurationFilePath,
@@ -22,7 +13,7 @@
         [string]$updatedSourceDirectory
     )
 
-    Add-Type -AssemblyName System.Web
+    #Add-Type -AssemblyName System.Web
 
     # Register this script as a confidential client (web app) in your B2C tenant using the regular, non-B2C blade, App Registrations (legacy):
     #  1. Paste its Application Id into $clientId below
@@ -45,9 +36,6 @@
         }
     }
 
-    $clientSecret = [System.Web.HttpUtility]::UrlEncode($clientSecret)
-    # $s = ConvertTo-SecureString $clientSecret -AsPlainText -force
-
     # upload policies whose base id is given
     function Upload-Children($baseId) {
         foreach($p in $policyList) {
@@ -62,10 +50,10 @@
                     if (-not $updatedSourceDirectory.EndsWith("\")) {
                         $updatedSourceDirectory = $updatedSourceDirectory + "\"
                     }
-                    $envUpdatedDir = '{0}{1}' -f $updatedSourceDirectory, $env.TenantName
+                    $envUpdatedDir = '{0}{1}' -f $updatedSourceDirectory, $b2c.TenantDomain
                     if(!(Test-Path -Path $envUpdatedDir)){
                         New-Item -ItemType directory -Path $envUpdatedDir
-                        Write-Host "  Updated source folder created for " + $env.TenantName
+                        Write-Host "  Updated source folder created for " + $b2c.TenantDomain
                     }
                     $outFile = '{0}\{1}' -f $envUpdatedDir, $p.Source
                     if (Test-Path $outFile) {
@@ -77,20 +65,23 @@
                     }
                 }
                 "{0}: uploading" -f $p.Id
-                $policy = $p.Body -replace "yourtenant", $env.TenantName
-                $policy = $policy -replace "ProxyIdentityExperienceFrameworkAppId", $env.ProxyIdentityExperienceFrameworkAppId
-                $policy = $policy -replace "IdentityExperienceFrameworkAppId", $env.IdentityExperienceFrameworkAppId
-                $policy = $policy.Replace('PolicyId="B2C_1A_', 'PolicyId="B2C_1A_{0}' -f $env.PolicyPrefix)
-                $policy = $policy.Replace('/B2C_1A_', '/B2C_1A_{0}' -f $env.PolicyPrefix)
-                $policy = $policy.Replace('<PolicyId>B2C_1A_', '<PolicyId>B2C_1A_{0}' -f $env.PolicyPrefix)
+                $policy = $p.Body -replace "yourtenant.onmicrosoft.com", $b2c.TenantDomain
+                $policy = $policy -replace "ProxyIdentityExperienceFrameworkAppId", $conf.ProxyIdentityExperienceFrameworkAppId
+                $policy = $policy -replace "IdentityExperienceFrameworkAppId", $conf.IdentityExperienceFrameworkAppId
+                $policy = $policy.Replace('PolicyId="B2C_1A_', 'PolicyId="B2C_1A_{0}' -f $conf.PolicyPrefix)
+                $policy = $policy.Replace('/B2C_1A_', '/B2C_1A_{0}' -f $conf.PolicyPrefix)
+                $policy = $policy.Replace('<PolicyId>B2C_1A_', '<PolicyId>B2C_1A_{0}' -f $conf.PolicyPrefix)
                 # replace other placeholders, e.g.
-                $policy = $policy -replace "{CheckPlayerAPIUrl}", $env.CheckPlayerAPIUrl
+                $policy = $policy -replace "{CheckPlayerAPIUrl}", $conf.CheckPlayerAPIUrl
 
-                $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $env.PolicyPrefix)
-                $url = 'https://graph.microsoft.com/beta/trustFramework/policies/{0}/$value' -f $policyId
-                $uploadResponse = Invoke-WebRequest $url -Body $policy -Method 'PUT' -ContentType 'application/xml' -Headers $headers
-                $result = '      Result: {0} - {1}' -f $uploadResponse.StatusCode, $uploadResponse.StatusDescription
-                $result
+                $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $conf.PolicyPrefix)
+
+                #if ($createNew) {
+                    Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId
+                #} else {
+                #    Set-AzureADMSTrustFrameworkPolicy -Id $policyId -Content $policy
+                #}
+
 
                 if (-not ([string]::IsNullOrEmpty($outFile))) {
                     out-file -FilePath $outFile -inputobject $policy
@@ -99,6 +90,9 @@
             }
         }
     }
+
+    # get current tenant data
+    $b2c = Get-AzureADCurrentSessionInfo
 
     # load originals
     $files = Get-Childitem -Path $sourceDirectory -Include *.xml
@@ -113,18 +107,9 @@
         "Id: {0}; Base:{1}" -f $p.Id, $p.BaseId
     }
 
+    # now start the upload process making sure you start with the base (base id == null)
     $conf = Get-Content -Path $configurationFilePath | Out-String | ConvertFrom-Json
-    foreach($env in $conf.Environments) {
-        $tenant = $env.TenantName
-        $body = "grant_type=client_credentials&scope=https://graph.microsoft.com/.default&client_id=$clientId&client_secret=$clientSecret"
-        $LoginResponse = Invoke-WebRequest "https://login.microsoftonline.com/$tenant.onmicrosoft.com/oauth2/v2.0/token" -Body $Body -Method 'POST' -ContentType 'application/x-www-form-urlencoded'
-        $tokens = $loginResponse.Content | ConvertFrom-Json
-        $access_token = $tokens.access_token
-        $headers = @{Authorization = "Bearer $access_token"}  
-
-        'Generating ' + $env.Name
-        Upload-Children($null)
-    }
+    Upload-Children($null)
 }
 
 # Creates a json object with typical settings needed by
@@ -135,6 +120,7 @@ function Get-IEFSettings {
         [ValidateNotNullOrEmpty()]
         [string]$policyPrefix
     )
+
     $iefAppName = "IdentityExperienceFramework"
     if(!($iefApp = Get-AzureADApplication -Filter "DisplayName eq '$($iefAppName)'"  -ErrorAction SilentlyContinue))
     {
@@ -163,15 +149,12 @@ function Get-IEFSettings {
         } 
     }
 
-    $conn = Get-AzureADCurrentSessionInfo
     $envs = @()
     $envs += @{ 
-        TenantName = $conn.TenantDomain.Split('.')[0]; 
         IdentityExperienceFrameworkAppId = $iefApp.AppId;
         ProxyIdentityExperienceFrameworkAppId = $iefProxyApp.AppId;
         PolicyPrefix = $policyPrefix  }
-    $conf = @{ Environments = $envs }
-    $conf | ConvertTo-Json
+    $envs | ConvertTo-Json
 
     <#
      # 
