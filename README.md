@@ -55,6 +55,8 @@ $dest = 'C:\LocalAccounts\updated'
 Upload-IEFPolicies -clientId $clientId -clientSecret $clientSecret -configurationFilePath $confFile -sourceDirectory $source -updatedSourceDirectory $dest`
 ```
 
+To prevent the script from actually uploading any policies but have it only do the string replacements add *-generateOnly* to the above command.
+
 Where:
 - confFile is the location of your appSettings.json file
 - source is the directory containing your IEF policies
