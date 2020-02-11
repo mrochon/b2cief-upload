@@ -10,7 +10,10 @@
         [string]$sourceDirectory,
 
         [ValidateNotNullOrEmpty()]
-        [string]$updatedSourceDirectory
+        [string]$updatedSourceDirectory,
+
+        [ValidateNotNullOrEmpty()]
+        [switch]$generateOnly
     )
 
     #Add-Type -AssemblyName System.Web
@@ -71,17 +74,22 @@
                 $policy = $policy.Replace('PolicyId="B2C_1A_', 'PolicyId="B2C_1A_{0}' -f $conf.PolicyPrefix)
                 $policy = $policy.Replace('/B2C_1A_', '/B2C_1A_{0}' -f $conf.PolicyPrefix)
                 $policy = $policy.Replace('<PolicyId>B2C_1A_', '<PolicyId>B2C_1A_{0}' -f $conf.PolicyPrefix)
-                # replace other placeholders, e.g.
-                $policy = $policy -replace "{CheckPlayerAPIUrl}", $conf.CheckPlayerAPIUrl
+
+                # replace other placeholders, e.g. {MyRest} with http://restfunc.com. Note replacement string must be in {}
+                $special = @('IdentityExperienceFrameworkAppId', 'ProxyIdentityExperienceFrameworkAppId', 'PolicyPrefix')
+                foreach($memb in Get-Member -InputObject $conf -MemberType NoteProperty) {
+                    if ($memb.MemberType -eq 'NoteProperty') {
+                        if ($special.Contains($memb.Name)) { continue }
+                        $repl = "{{{0}}}" -f $memb.Name
+                        $policy = $policy.Replace($repl, $memb.Definition.Split('=')[1])
+                    }
+                }
 
                 $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $conf.PolicyPrefix)
 
-                #if ($createNew) {
+                if (-not $generateOnly) {
                     Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId
-                #} else {
-                #    Set-AzureADMSTrustFrameworkPolicy -Id $policyId -Content $policy
-                #}
-
+                }
 
                 if (-not ([string]::IsNullOrEmpty($outFile))) {
                     out-file -FilePath $outFile -inputobject $policy
