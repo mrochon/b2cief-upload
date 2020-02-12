@@ -3,17 +3,20 @@
     param(
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]$configurationFilePath,
-
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
         [string]$sourceDirectory,
+
+        [ValidateNotNullOrEmpty()]
+        [string]$configurationFilePath,
 
         [ValidateNotNullOrEmpty()]
         [string]$updatedSourceDirectory,
 
         [ValidateNotNullOrEmpty()]
+        [string]$prefix,
+
+        [ValidateNotNullOrEmpty()]
         [switch]$generateOnly
+
     )
 
     #Add-Type -AssemblyName System.Web
@@ -69,23 +72,25 @@
                 }
                 "{0}: uploading" -f $p.Id
                 $policy = $p.Body -replace "yourtenant.onmicrosoft.com", $b2c.TenantDomain
-                $policy = $policy -replace "ProxyIdentityExperienceFrameworkAppId", $conf.ProxyIdentityExperienceFrameworkAppId
-                $policy = $policy -replace "IdentityExperienceFrameworkAppId", $conf.IdentityExperienceFrameworkAppId
-                $policy = $policy.Replace('PolicyId="B2C_1A_', 'PolicyId="B2C_1A_{0}' -f $conf.PolicyPrefix)
-                $policy = $policy.Replace('/B2C_1A_', '/B2C_1A_{0}' -f $conf.PolicyPrefix)
-                $policy = $policy.Replace('<PolicyId>B2C_1A_', '<PolicyId>B2C_1A_{0}' -f $conf.PolicyPrefix)
+                $policy = $policy -replace "ProxyIdentityExperienceFrameworkAppId", $iefRes.AppId
+                $policy = $policy -replace "IdentityExperienceFrameworkAppId", $iefProxy.AppId
+                $policy = $policy.Replace('PolicyId="B2C_1A_', 'PolicyId="B2C_1A_{0}' -f $prefix)
+                $policy = $policy.Replace('/B2C_1A_', '/B2C_1A_{0}' -f $prefix)
+                $policy = $policy.Replace('<PolicyId>B2C_1A_', '<PolicyId>B2C_1A_{0}' -f $prefix)
 
                 # replace other placeholders, e.g. {MyRest} with http://restfunc.com. Note replacement string must be in {}
-                $special = @('IdentityExperienceFrameworkAppId', 'ProxyIdentityExperienceFrameworkAppId', 'PolicyPrefix')
-                foreach($memb in Get-Member -InputObject $conf -MemberType NoteProperty) {
-                    if ($memb.MemberType -eq 'NoteProperty') {
-                        if ($special.Contains($memb.Name)) { continue }
-                        $repl = "{{{0}}}" -f $memb.Name
-                        $policy = $policy.Replace($repl, $memb.Definition.Split('=')[1])
+                if ($conf -ne $null) {
+                    $special = @('IdentityExperienceFrameworkAppId', 'ProxyIdentityExperienceFrameworkAppId', 'PolicyPrefix')
+                    foreach($memb in Get-Member -InputObject $conf -MemberType NoteProperty) {
+                        if ($memb.MemberType -eq 'NoteProperty') {
+                            if ($special.Contains($memb.Name)) { continue }
+                            $repl = "{{{0}}}" -f $memb.Name
+                            $policy = $policy.Replace($repl, $memb.Definition.Split('=')[1])
+                        }
                     }
                 }
 
-                $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $conf.PolicyPrefix)
+                $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $prefix)
 
                 if (-not $generateOnly) {
                     Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId
@@ -102,6 +107,9 @@
     # get current tenant data
     $b2c = Get-AzureADCurrentSessionInfo
 
+    $iefRes = Get-AzureADApplication -Filter "DisplayName eq 'IdentityExperienceFramework'"
+    $iefProxy = Get-AzureADApplication -Filter "DisplayName eq 'ProxyIdentityExperienceFramework'"
+
     # load originals
     $files = Get-Childitem -Path $sourceDirectory -Include *.xml
     $policyList = @()
@@ -115,8 +123,13 @@
         "Id: {0}; Base:{1}" -f $p.Id, $p.BaseId
     }
 
+    if (-not ([string]::IsNullOrEmpty($configurationFilePath))) {
+        $conf = Get-Content -Path $configurationFilePath | Out-String | ConvertFrom-Json
+    } else {
+        $conf = $null
+    }
+
     # now start the upload process making sure you start with the base (base id == null)
-    $conf = Get-Content -Path $configurationFilePath | Out-String | ConvertFrom-Json
     Upload-Children($null)
 }
 

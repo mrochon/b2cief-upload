@@ -52,15 +52,17 @@ $confFile = 'C:\LocalAccounts\appSettings.json'
 $source = 'C:\LocalAccounts'
 $dest = 'C:\LocalAccounts\updated'
 
-Upload-IEFPolicies -clientId $clientId -clientSecret $clientSecret -configurationFilePath $confFile -sourceDirectory $source -updatedSourceDirectory $dest`
+Upload-IEFPolicies  -sourceDirectory $source -configurationFilePath $confFile -updatedSourceDirectory $dest`
 ```
-
-To prevent the script from actually uploading any policies but have it only do the string replacements add *-generateOnly* to the above command.
-
 Where:
-- confFile is the location of your appSettings.json file
-- source is the directory containing your IEF policies
-- dest (optional) is the directory where the script should save copies of modified and uploaded policies. If you do use it, the script will selectively refrain from uploading policies which were not modified since last stored in this folder.
+
+| Property name | Required | Purpose |
+| -------- | ------ | ----- |
+| sourceDirectory | Y | Directory path where your xml policies are stored |
+| updatedSourceDirectory | N | Directory path where the policies updated by this script will be stored. Also used to prevent uploading unmodified policies |
+| configurationFilePath | N | jso file with additional replacement strings. The script will match any property in this file with a string with format *{<property name>}* and replace it with the value of the property |
+| generateOnly | N | If used, the script will only generate policy files but not upload them to B2C |
+
 
 
 
