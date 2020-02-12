@@ -14,8 +14,7 @@ If you have never set up your B2C to use IEF policies you can use [my IEF setup 
 ### Policy setup
 1. Download the script file and execute it in a PowerSehll console to define the two functions included in it (there may be better way of doing this but I am not yet that good at PowerShell).
 1. Store your policies in a single folder. (The SampleData folder on this github project was downloaded from the [starter pack](https://github.com/Azure-Samples/active-directory-b2c-custom-policy-starterpack) for local acounts).
-2. Modify the sampleData/appSettings.json file to include the values you need to replace in the policies. (you can also use the Get-IEFSettings command below to 
-generate this file).
+2. Optionally, modify the sampleData/appSettings.json file to include any values you need to replace in the policies (e.g. REST API urls). The IEF resource and proxy app ids will be retrieved automatically from your B2C tenant - no need to provide them in the settings file.
 
 The script will use the following string replacement rules to apply your *appSettings.json* values.
 
