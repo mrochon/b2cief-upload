@@ -93,7 +93,7 @@
                 $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $prefix)
 
                 if (-not $generateOnly) {
-                    Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId
+                    Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId | Out-Null
                 }
 
                 if (-not ([string]::IsNullOrEmpty($outFile))) {
