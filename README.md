@@ -7,6 +7,8 @@ PowerShell script which:
 
 ## Usage
 
+**Please install (AzureADPreview module)[https://docs.microsoft.com/en-us/powershell/azure/active-directory/install-adv2?view=azureadps-2.0#installing-the-azure-ad-module] before proceding**
+
 ### Tenant setup
 
 If you have never set up your B2C to use IEF policies you can use [my IEF setup website](https://b2ciefsetup.azurewebsites.net/) or follow [instructions provided in the official documentation](https://docs.microsoft.com/en-us/azure/active-directory-b2c/custom-policy-get-started) to do so. 
