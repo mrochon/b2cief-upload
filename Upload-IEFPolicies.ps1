@@ -72,8 +72,8 @@
                 }
                 "{0}: uploading" -f $p.Id
                 $policy = $p.Body -replace "yourtenant.onmicrosoft.com", $b2c.TenantDomain
-                $policy = $policy -replace "ProxyIdentityExperienceFrameworkAppId", $iefRes.AppId
-                $policy = $policy -replace "IdentityExperienceFrameworkAppId", $iefProxy.AppId
+                $policy = $policy -replace "ProxyIdentityExperienceFrameworkAppId", $iefProxy.AppId
+                $policy = $policy -replace "IdentityExperienceFrameworkAppId", $iefRes.AppId
                 $policy = $policy.Replace('PolicyId="B2C_1A_', 'PolicyId="B2C_1A_{0}' -f $prefix)
                 $policy = $policy.Replace('/B2C_1A_', '/B2C_1A_{0}' -f $prefix)
                 $policy = $policy.Replace('<PolicyId>B2C_1A_', '<PolicyId>B2C_1A_{0}' -f $prefix)
