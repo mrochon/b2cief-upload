@@ -7,7 +7,8 @@ PowerShell script which:
 
 ## Usage
 
-**Please install [AzureADPreview module](https://docs.microsoft.com/en-us/powershell/azure/active-directory/install-adv2?view=azureadps-2.0#installing-the-azure-ad-module) before proceding**
+**Please install [AzureADPreview module](https://docs.microsoft.com/en-us/powershell/azure/active-directory/install-adv2?view=azureadps-2.0#installing-the-azure-ad-module) before proceding. You must also uninstall
+any non-preview versions of the AzureAD module (uninstall-module AzureAD).**
 
 ### Tenant setup
 
