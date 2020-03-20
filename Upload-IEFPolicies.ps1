@@ -75,7 +75,8 @@
                         }
                     }
                 }
-                "{0}: uploading" -f $p.Id
+                $msg = "{0}: uploading" -f $p.Id
+                Write-Host $msg  -ForegroundColor Green 
                 $policy = $p.Body -replace "yourtenant.onmicrosoft.com", $b2c.TenantDomain
                 $policy = $policy -replace "ProxyIdentityExperienceFrameworkAppId", $iefProxy.AppId
                 $policy = $policy -replace "IdentityExperienceFrameworkAppId", $iefRes.AppId
