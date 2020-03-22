@@ -34,7 +34,7 @@
     # https://login.microsoftonline.com/<yourtenant>.onmicrosoft.com/oauth2/authorize?client_id=<appId>&response_mode=form_post&response_type=code&state=abc&nonce=xyz
     # 
 
-    $m = Get-Module -Name AzureADPreview
+    $m = Get-Module -ListAvailable -Name AzureADPreview
     if ($m -eq $null) {
         "Please install-module AzureADPreview before running this command"
         return
