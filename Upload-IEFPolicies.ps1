@@ -1,15 +1,15 @@
 ﻿function Upload-IEFPolicies {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        #[Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]$sourceDirectory,
+        [string]$sourceDirectory = '.\',
 
         [ValidateNotNullOrEmpty()]
-        [string]$configurationFilePath,
+        [string]$configurationFilePath = '.\conf.json',
 
         [ValidateNotNullOrEmpty()]
-        [string]$updatedSourceDirectory,
+        [string]$updatedSourceDirectory = '.\',
 
         [ValidateNotNullOrEmpty()]
         [string]$prefix,
