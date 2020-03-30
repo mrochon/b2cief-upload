@@ -9,7 +9,7 @@
         [string]$configurationFilePath = '.\conf.json',
 
         [ValidateNotNullOrEmpty()]
-        [string]$updatedSourceDirectory = '.\',
+        [string]$updatedSourceDirectory = '.\debug\',
 
         [ValidateNotNullOrEmpty()]
         [string]$prefix,
