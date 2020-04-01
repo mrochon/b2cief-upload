@@ -42,13 +42,21 @@ $dest = 'C:\LocalAccounts\updated'
 
 Upload-IEFPolicies  -sourceDirectory $source -configurationFilePath $confFile -updatedSourceDirectory $dest`
 ```
+or
+
+```PowerShell
+Connect-AzureAD -TenantId yourtenant.onmicrosoft.com
+cd 'c:\your directory with the IEF policies'
+Upload-IEFPolicies -prefix AB
+```
+
 Parameters:
 
 | Property name | Required | Purpose |
 | -------- | ------ | ----- |
 | sourceDirectory | Y | Directory path where your xml policies are stored |
 | updatedSourceDirectory | N | Directory path where the policies updated by this script will be stored. Also used to prevent uploading unmodified policies |
-| configurationFilePath | N | jso file with additional replacement strings. The script will match any property in this file with a string with format *{<property name>}* and replace it with the value of the property |
+| configurationFilePath | N | json file with additional replacement strings. Default: *.\conf.json*. The script will match any property in this file with a string with format *{<property name>}* and replace it with the value of the property |
 | generateOnly | N | If used, the script will only generate policy files but not upload them to B2C |
 | prefix | N | String inserted into the name of generated policies, e.g. the new base policy name will be *B2C_1A_XYZTrustFrameBase, where XYZ is the value of the provided prefix |
 
