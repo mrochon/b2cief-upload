@@ -99,7 +99,7 @@
                 $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $prefix)
 
                 if (-not $generateOnly) {
-                    Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId | Out-Null
+                    Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId -ErrorAction Stop | Out-Null
                 }
 
                 if (-not ([string]::IsNullOrEmpty($outFile))) {
@@ -111,8 +111,8 @@
     }
 
     # get current tenant data
-    $b2c = Get-AzureADCurrentSessionInfo
-
+    $b2c = Get-AzureADCurrentSessionInfo -ErrorAction stop
+    
     $iefRes = Get-AzureADApplication -Filter "DisplayName eq 'IdentityExperienceFramework'"
     $iefProxy = Get-AzureADApplication -Filter "DisplayName eq 'ProxyIdentityExperienceFramework'"
 
@@ -131,6 +131,7 @@
 
     if (-not ([string]::IsNullOrEmpty($configurationFilePath))) {
         $conf = Get-Content -Path $configurationFilePath | Out-String | ConvertFrom-Json
+        if ([string]::IsNullOrEmpty($prefix)){ $prefix = $conf.Prefix }
     } else {
         $conf = $null
     }
