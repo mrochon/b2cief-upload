@@ -68,7 +68,7 @@
                     }
                     $outFile = '{0}\{1}' -f $envUpdatedDir, $p.Source
                     if (Test-Path $outFile) {
-                        if ($p.LastWrite -le (Get-Item $outFile).LastWriteTime) {
+                        if ($p.LastWrite -gt (Get-Item $outFile).LastWriteTime) {
                             "{0}: is up to date" -f $p.Id
                             Upload-Children $p.Id
                             continue;
@@ -97,12 +97,17 @@
                 }
 
                 $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $prefix)
-
+                $isOK = $true
                 if (-not $generateOnly) {
-                    Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId -ErrorAction Stop | Out-Null
+                    try {
+                        Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId -ErrorAction Stop | Out-Null
+                    } catch {
+                        $isOk = $false
+                        $_
+                    }
                 }
 
-                if (-not ([string]::IsNullOrEmpty($outFile))) {
+                if ($isOK) {
                     out-file -FilePath $outFile -inputobject $policy
                 }
                 Upload-Children $p.Id
