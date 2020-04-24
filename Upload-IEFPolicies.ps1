@@ -68,7 +68,7 @@
                     }
                     $outFile = '{0}\{1}' -f $envUpdatedDir, $p.Source
                     if (Test-Path $outFile) {
-                        if ($p.LastWrite -gt (Get-Item $outFile).LastWrite) {
+                        if ($p.LastWrite.Ticks -le (Get-Item $outFile).LastWriteTime.Ticks) {
                             "{0}: is up to date" -f $p.Id
                             Upload-Children $p.Id
                             continue;
