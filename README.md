@@ -4,6 +4,7 @@
 PowerShell script which:
 1. Modifies the xml of a set of IEF policies replacing them with values from the target B2C tenant and an optional configuration (useful if policies need to be used in different tenants - Dev, QA, etc. - with different REST urls, key names, etc.) 
 2. Optionally uploads the files to a B2C tenants
+3. Separate command to download all policies from a tenant
 
 ## Usage
 
@@ -60,8 +61,22 @@ Parameters:
 | generateOnly | N | If used, the script will only generate policy files but not upload them to B2C |
 | prefix | N | String inserted into the name of generated policies, e.g. the new base policy name will be *B2C_1A_XYZTrustFrameBase, where XYZ is the value of the provided prefix |
 
+### Download-IEFPolicies
 
+Use *Download-IEFPolicies* function to download your IEF policies from the B2C tenant to a local folder.
 
+E.g.
+
+```PowerShell
+$dest = 'C:\LocalAccounts\policies'
+
+download-IEFPolicies  -destinationPath $dest -tenantName mytenant `
+```
+
+| Property name | Required | Purpose |
+| -------- | ------ | ----- |
+| destinationPath | Y | Directory path where your xml policies are stored. Must already exist |
+| tenantName | N | Prefix part of your tenant name, e.g. *mytenant* represent *mytenant.onmicrosoft.com* |
 
 
 
