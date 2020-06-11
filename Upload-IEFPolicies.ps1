@@ -205,3 +205,38 @@ function Get-IEFSettings {
     }
     #>
 }
+
+function Download-IEFPolicies {
+    [CmdletBinding()]
+    param(
+        #[Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$destinationPath = '.\',
+
+        #[Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$tenantName = 'mrochonb2cprod'
+    )
+        $m = Get-Module -ListAvailable -Name AzureADPreview
+    if ($m -eq $null) {
+        "Please install-module AzureADPreview before running this command"
+        return
+    }
+    try {
+        $b2c = Get-AzureADCurrentSessionInfo
+        if ((-Not [String]::IsNullOrEmpty($tenantName)) -and ($tenantName -ne $b2c.TenantDomain.Split('.')[0])) {
+            throw
+        }
+    } catch {
+        $b2c = connect-azuread -tenantId ("{0}.onmicrosoft.com" -f $tenantName)
+    }
+
+    if (-Not $destinationPath.EndsWith('\')) {
+        $destinationPath = $destinationPath + '\' 
+    }
+
+    foreach($policy in Get-AzureADMSTrustFrameworkPolicy) {
+        $fileName = "{0}\{1}.xml" -f $destinationPath, $policy.Id
+        Get-AzureADMSTrustFrameworkPolicy -Id $policy.Id >> $fileName
+    }
+}
