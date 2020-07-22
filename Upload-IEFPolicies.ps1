@@ -19,21 +19,6 @@
 
     )
 
-    #Add-Type -AssemblyName System.Web
-
-    # Register this script as a confidential client (web app) in your B2C tenant using the regular, non-B2C blade, App Registrations (legacy):
-    #  1. Paste its Application Id into $clientId below
-    #  2. Create a secret for the app and paste it into the $clientSecret below
-    #  3. Grant it one Api Permission: Microsoft Graph->Application permission->Read and write your organization's trust framework policies
-    #
-    # If you are planning on using the script to upload your IEF policies to multiple B2C tenants (dev, qa, etc) 
-    # mark the app as multi-tenant (allows signin from multiple tenants).
-    # 
-    # To grant this app permission in each tenant, a user with tenant admin permissions will need to grant admin consent using the following URL:
-    # 
-    # https://login.microsoftonline.com/<yourtenant>.onmicrosoft.com/oauth2/authorize?client_id=<appId>&response_mode=form_post&response_type=code&state=abc&nonce=xyz
-    # 
-
     $m = Get-Module -ListAvailable -Name AzureADPreview
     if ($m -eq $null) {
         "Please install-module AzureADPreview before running this command"
@@ -135,7 +120,7 @@
     }
 
     if (-not ([string]::IsNullOrEmpty($configurationFilePath))) {
-        $conf = Get-Content -Path $configurationFilePath | Out-String | ConvertFrom-Json
+        $conf = Get-Content -Path $configurationFilePath -ErrorAction Continue | Out-String | ConvertFrom-Json
         if ([string]::IsNullOrEmpty($prefix)){ $prefix = $conf.Prefix }
     } else {
         $conf = $null
