@@ -196,25 +196,21 @@ function Download-IEFPolicies {
     param(
         #[Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]$destinationPath = '.\',
+        [string]$tenantName,
 
         #[Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]$tenantName = 'mrochonb2cprod'
+        [string]$destinationPath
     )
-        $m = Get-Module -ListAvailable -Name AzureADPreview
+    if ([string]::IsNullOrEmpty($desinationPath)) {
+        $destinationPath = ".\"
+    }
+    $m = Get-Module -ListAvailable -Name AzureADPreview
     if ($m -eq $null) {
         "Please install-module AzureADPreview before running this command"
         return
     }
-    try {
-        $b2c = Get-AzureADCurrentSessionInfo
-        if ((-Not [String]::IsNullOrEmpty($tenantName)) -and ($tenantName -ne $b2c.TenantDomain.Split('.')[0])) {
-            throw
-        }
-    } catch {
-        $b2c = connect-azuread -tenantId ("{0}.onmicrosoft.com" -f $tenantName)
-    }
+    $b2c = Get-AzureADCurrentSessionInfo -ErrorAction Stop
 
     if (-Not $destinationPath.EndsWith('\')) {
         $destinationPath = $destinationPath + '\' 
