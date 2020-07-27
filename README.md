@@ -1,10 +1,11 @@
-# PowerShell to configure and upload a set of B2C IEF policies
+# PowerShell to configure and upload or download a set of B2C IEF policies
 
 ## Purpose
-PowerShell script which:
-1. Modifies the xml of a set of IEF policies replacing them with values from the target B2C tenant and an optional configuration (useful if policies need to be used in different tenants - Dev, QA, etc. - with different REST urls, key names, etc.) 
-2. Optionally uploads the files to a B2C tenants
-3. Separate command to download all policies from a tenant
+PowerShell script with two functions:
+1. Configure and upload policies
+1.1 Modifies the xml of a set of IEF policies replacing them with values from the target B2C tenant and an optional configuration (useful if policies need to be used in different tenants - Dev, QA, etc. - with different REST urls, key names, etc.) 
+1.2. Optionally uploads the files to a B2C tenants
+2. Download existing custom journeys from a tenant
 
 ## Usage
 
@@ -69,8 +70,8 @@ E.g.
 
 ```PowerShell
 $dest = 'C:\LocalAccounts\policies'
-
-download-IEFPolicies  -destinationPath $dest -tenantName mytenant `
+Connect-AzureAD -TenantId yourtenant.onmicrosoft.com
+download-IEFPolicies  -destinationPath $dest  `
 ```
 
 | Property name | Required | Purpose |
