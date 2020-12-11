@@ -84,18 +84,34 @@
                 $policyId = $p.Id.Replace('_1A_', '_1A_{0}' -f $prefix)
                 $isOK = $true
                 if (-not $generateOnly) {
+                $exists = $true
                     try {
-                        Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId -ErrorAction Stop | Out-Null
+                        $curr = Get-AzureADMSTrustFrameworkPolicy -Id $policyId
+                    } catch {
+                        $exists = $false
+                    }
+                    try {
+                        if ($exists) {
+                            "Replacing"
+                            Set-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) -Id $policyId | Out-Null
+                        } else {
+                            "New journey"
+                            New-AzureADMSTrustFrameworkPolicy -Content ($policy | Out-String) | Out-Null
+                        }
                     } catch {
                         $isOk = $false
                         $_
+                        if(-Not $exists) {
+                            "Use https://b2ciefsetup.azurewebsites.net to ensure the tenant is setup for IEF"
+                        }
+                        "Ending upload"
                     }
                 }
 
                 if ($isOK) {
                     out-file -FilePath $outFile -inputobject $policy
+                    Upload-Children $p.Id
                 }
-                Upload-Children $p.Id
             }
         }
     }
