@@ -62,7 +62,20 @@
                 }
                 $msg = "{0}: uploading" -f $p.Id
                 Write-Host $msg  -ForegroundColor Green 
-                $policy = $p.Body -replace "yourtenant.onmicrosoft.com", $b2c.TenantDomain
+                # Replace tenant id but only if already there. It messes up xml formatting
+                $xml = [xml] $p.Body
+                $xml.PreserveWhitespace = $true
+                try {
+                    $xml.TrustFrameworkPolicy.TenantObjectId = $b2c.TenantId.ToString()
+                    $policy = $xml.OuterXml
+                } catch {
+                    # tenantId not uses
+                    $policy = $p.Body
+                    #$xmlAtt = $xml.CreateAttribute("TenantObjectId")
+                    #$xmlAtt.Value = $b2c.TenantId.ToString()
+                    #$txt = $xml.TrustFrameworkPolicy.Attributes.Append($xmlAtt)
+                }
+                $policy = $policy -replace "yourtenant", $b2cName 
                 $policy = $policy -replace "ProxyIdentityExperienceFrameworkAppId", $iefProxy.AppId
                 $policy = $policy -replace "IdentityExperienceFrameworkAppId", $iefRes.AppId
                 $policy = $policy.Replace('PolicyId="B2C_1A_', 'PolicyId="B2C_1A_{0}' -f $prefix)
@@ -118,6 +131,7 @@
 
     # get current tenant data
     $b2c = Get-AzureADCurrentSessionInfo -ErrorAction stop
+    $b2cName = $b2c.TenantDomain.Split('.')[0]
     
     $iefRes = Get-AzureADApplication -Filter "DisplayName eq 'IdentityExperienceFramework'"
     $iefProxy = Get-AzureADApplication -Filter "DisplayName eq 'ProxyIdentityExperienceFramework'"
