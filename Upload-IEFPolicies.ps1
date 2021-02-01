@@ -226,7 +226,7 @@ function Download-IEFPolicies {
     param(
         #[Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]$tenantName,
+        [string]$prefix,
 
         #[Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
@@ -246,7 +246,8 @@ function Download-IEFPolicies {
         $destinationPath = $destinationPath + '\' 
     }
 
-    foreach($policy in Get-AzureADMSTrustFrameworkPolicy) {
+    $prefix = "B2C_1A_" + $prefix
+    foreach($policy in Get-AzureADMSTrustFrameworkPolicy | Where-Object {($_.Id).startsWith($prefix)}) {
         $fileName = "{0}\{1}.xml" -f $destinationPath, $policy.Id
         Get-AzureADMSTrustFrameworkPolicy -Id $policy.Id >> $fileName
     }
